@@ -1,9 +1,12 @@
 # Get all distinct extensions
-(Get-ChildItem -File -Recurse | Select -Property @{N="ExtLow";E={$_.Extension.ToLower()}} -Unique).ExtLow  
-# Save in array
+$fileExtensions = (Get-ChildItem -File -Recurse | Select-Object -Property @{N="ExtLow";E={$_.Extension.ToLower()}} -Unique).ExtLow  
 
-# Loop through array
-Get-ChildItem -Path .\ -Filter *.js -Recurse -File -Name| ForEach-Object {
-    # Add to seperate workbook
-    [System.IO.Path]::GetFileNameWithoutExtension($_)
+# List all files and export to CSV
+$fileExtensions | ForEach-Object {
+    if($_.length -gt 0) {
+        Get-ChildItem -Path .\ -Filter *$($_) -Recurse `
+      | Sort-Object Extension  `
+      | Select-Object Extension, Name, DirectoryName, Length `
+      | Export-Csv testerino.csv -NoTypeInformation -Append
+    }
 }
